@@ -4,19 +4,22 @@
 #include "lab3a.h"
 #include "PmodNAV.h"
 #include "lcd.h"
+#include "gpio.h"
+//TODO: make this file only consider the z axis!
 void calibrate_acc_threshold(void){
 	/* set default values */
 	int i = 0;
-	local_min_acc_x = 100;
-	local_min_acc_y = 100;
+//	local_min_acc_x = 100;
+//	local_min_acc_y = 100;
+
+//	local_max_acc_x = -100;
+//	local_max_acc_y = -100;
 	local_min_acc_z = 100;
-	local_max_acc_x = -100;
-	local_max_acc_y = -100;
 	local_max_acc_z = -100;
 	last_step = -1;
 
 	/* average sample i w/ 3 point average */
-	for ( int j = 0; j < 3; j++){
+	for ( int j = 2; j < 3; j++){
 		for (i = (sample_num) - (SAMPLE_WINDOW-1); i < (sample_num) - 1; i++){
 			accel_data[j][i] = (accel_data[j][i-1] + accel_data[j][i] + accel_data[j][i+1])/3.0;
 		}
@@ -24,26 +27,30 @@ void calibrate_acc_threshold(void){
 
 	/* update min and max*/
 	for (i = (sample_num) - (SAMPLE_WINDOW-1); i < (sample_num); i++){
-		if( accel_data[0][i] < local_min_acc_x) local_min_acc_x = accel_data[0][i];
-		if( accel_data[1][i] < local_min_acc_y) local_min_acc_y = accel_data[1][i];
+//		if( accel_data[0][i] < local_min_acc_x) local_min_acc_x = accel_data[0][i];
+//		if( accel_data[1][i] < local_min_acc_y) local_min_acc_y = accel_data[1][i];
 		if( accel_data[2][i] < local_min_acc_z) local_min_acc_z = accel_data[2][i];
-		if( accel_data[0][i] > local_max_acc_x) local_max_acc_x = accel_data[0][i];
-		if( accel_data[1][i] > local_max_acc_y) local_max_acc_y = accel_data[1][i];
+//		if( accel_data[0][i] > local_max_acc_x) local_max_acc_x = accel_data[0][i];
+//		if( accel_data[1][i] > local_max_acc_y) local_max_acc_y = accel_data[1][i];
 		if( accel_data[2][i] > local_max_acc_z) local_max_acc_z = accel_data[2][i];
 	}
 
 	/* calculate new thresholds */
-	acc_thresh_x = (local_min_acc_x + local_max_acc_x)/(float)2.0;
-	acc_thresh_y = (local_min_acc_y + local_max_acc_y)/(float)2.0;
-	acc_thresh_z = (local_min_acc_z + local_max_acc_z)/(float)2.0;
+//	acc_thresh_x = (local_min_acc_x + local_max_acc_x)/(float)2.0;
+//	acc_thresh_y = (local_min_acc_y + local_max_acc_y)/(float)2.0;
+	if( local_max_acc_z - local_min_acc_z > 0.25){
+		acc_thresh_z = (local_min_acc_z + local_max_acc_z)/(float)2.0;
+	}
 
+	cal_set = 1;
+	XGpio_DiscreteWrite(&Gpio_RGB_LED, LED_CHANNEL, LD17_RED);
 	/* determine new major axis */
 	determine_major_axis();
 }
 
 
 int determine_acc_step(void){
-
+//	int range;
 	char *compass[8] = {"North", "North-East", "East", "South-East", "South",
 			"South-West", "West", "North-West"};
 
@@ -63,7 +70,22 @@ int determine_acc_step(void){
 
 	/* if i-1 > thresh && i < thresh enter */
 	if( accel_data[major_axis][sample_num - 1] > thresh && accel_data[major_axis][sample_num] <= thresh){
+//		range_acc = local_max_acc_z - local_min_acc_z;
+		//TODO: recalibrate this for only z axis
+//		if( !cal_set ) return steps;
 
+		//TODO: add a criteria that filters out based on no activity of Z axis
+		if( local_max_acc_z - local_min_acc_z < 0.25 && cal_set ){
+			if( accel_data[major_axis][sample_num - 1] > local_max_acc_z || accel_data[major_axis][sample_num - 1] < local_min_acc_z ){
+				//move on
+			}
+			else if( accel_data[major_axis][sample_num] > local_max_acc_z || accel_data[major_axis][sample_num] < local_min_acc_z){
+				//move on
+			}
+			else{
+				return steps;
+			}
+		}
 		/* discount step if within 0.25 seconds */
 		if( (sample_num - last_step < 5) && last_step != -1) return steps;
 
@@ -80,14 +102,16 @@ int determine_acc_step(void){
 }
 
 void determine_major_axis(void){
-	int x_diff = abs(local_max_acc_x - local_min_acc_x);
-	int y_diff = abs(local_max_acc_y - local_min_acc_y);
-	int z_diff = abs(local_max_acc_z - local_min_acc_z);
+//	int x_diff = abs(local_max_acc_x - local_min_acc_x);
+//	int y_diff = abs(local_max_acc_y - local_min_acc_y);
+//	int z_diff = abs(local_max_acc_z - local_min_acc_z);
+//
+//	if ( x_diff > y_diff && x_diff > z_diff) major_axis = X_AXIS;
+//	else if (  y_diff > x_diff && y_diff > z_diff) major_axis = Y_AXIS;
+//	else if (z_diff > x_diff && z_diff > y_diff) major_axis = Z_AXIS;
+//
 
-	if ( x_diff > y_diff && x_diff > z_diff) major_axis = X_AXIS;
-	else if (  y_diff > x_diff && y_diff > z_diff) major_axis = Y_AXIS;
-	else if (z_diff > x_diff && z_diff > y_diff) major_axis = Z_AXIS;
-
+	major_axis = Z_AXIS;
 	++axis_count[major_axis];
 }
 

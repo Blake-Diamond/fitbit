@@ -32,6 +32,7 @@ float magXY;
 char *str;
 
 int last_step;
+volatile int cal_set;
 
 /* function definitions */
 void calibrate_acc_threshold(void);

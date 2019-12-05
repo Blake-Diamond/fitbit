@@ -68,11 +68,16 @@ QState Lab3A_on(Lab2A *me) {
 			NAV_SetODR(&nav, NAV_ACL_GYRO_MODE_INST_AG, NAV_ACL_ODR_XL_119HZ);
 
 			//set offsets for mag registers
-			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_X_REG_L_M, 0xE4);
-			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_Y_REG_L_M, 0x90);
-			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_Z_REG_H_M, 0xFE);
-			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_Z_REG_L_M, 0xEA);
+			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_X_REG_H_M, 0x0); //0x00E4
+			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_X_REG_L_M, 0xF7);
+			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_Y_REG_H_M, 0x0); //0x0090
+			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_Y_REG_L_M, 0x9B);
+			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_Z_REG_H_M, 0xFE); //0xFEEA
+			NAV_WriteSPI(&nav, NAV_INST_MAG, NAV_MAG_OFFSET_Z_REG_L_M, 0xF1);
 
+			local_min_acc_z = 100;
+			local_max_acc_z = -100;
+			cal_set = 0;
 			return Q_TRAN(&Calibrate_State);
 			}
 	}
@@ -132,6 +137,7 @@ QState Calibrate_State  (Lab2A *me){
 			case START_SIG: {
 				/* display directions */
 				fillRect(0, 70, DISP_X_SIZE, 150);
+//				XTmrCtr_Start(&axiTimer, 0);
 				display_cal_directions( lcd_buffer, BUF_SIZE, START_BTN);
 
 				XTmrCtr_Start(&axiTimer, 0);
