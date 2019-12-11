@@ -53,6 +53,11 @@
 #define true 1
 #define false 0
 
+#define PI 3.14159265358979323846
+#define PI_2 3.14159265358979323846 / 2
+#define PI_4 3.14159265358979323846 / 4
+
+
 #define NAV_ACT_THS              0B00000100
 #define NAV_ACT_DUR              0B00000101
 #define NAV_ACL_INT_GEN_CFG_XL   0B00000110
@@ -354,6 +359,8 @@ typedef struct {
    float tempC;
 } PmodNAV;
 
+volatile float Pref; /* refrence pressure for altitude */
+
 // Basic SPI writes and reads
 void NAV_DevTerm();
 
@@ -460,4 +467,18 @@ u8 NAV_GetFIFOStatus(PmodNAV* InstancePtr, u8 bInst);
 
 void Nav_EnableCaches(void);
 float Nav_AngleInXY(NAV_RectCoord r);
+float Nav_GetOrigin_Alt( float hPa, float altFeet);
+float Nav_ComputePref(float hPa, float altitudeFeet);
+float Nav_ConvPresToMeters(float P_refrence , float hPa);
+
+float find_cosine(float x);
+float find_sine(float y);
+float find_dist( float x, float y);
+float find_dir(float x, float y);
+float sqrt_f (float x);
+float compute_arctan( float x , float y);
+float pow_lin_approx( float x);
+float lookup_angle( u16 value );
+
+#define LUT_SIZE 128
 #endif // PmodNAV_H

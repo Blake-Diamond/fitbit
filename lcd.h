@@ -43,6 +43,7 @@
   The license applies to all part of the library including the 
   examples and tools supplied with the library.
 */
+#define DATA_IN_DRAM __attribute__((section(".data_in_DRAM")))
 
 #ifndef LCD_H_
 #define LCD_H_
@@ -69,33 +70,11 @@
 #define DISP_Y_SIZE     329
 #define DISP_BLK_SIZE   30
 
-#define ILI9341_BLACK       0x0000  ///<   0,   0,   0
-#define ILI9341_NAVY        0x000F  ///<   0,   0, 123
-#define ILI9341_DARKGREEN   0x03E0  ///<   0, 125,   0
-#define ILI9341_DARKCYAN    0x03EF  ///<   0, 125, 123
-#define ILI9341_MAROON      0x7800  ///< 123,   0,   0
-#define ILI9341_PURPLE      0x780F  ///< 123,   0, 123
-#define ILI9341_OLIVE       0x7BE0  ///< 123, 125,   0
-#define ILI9341_LIGHTGREY   0xC618  ///< 198, 195, 198
-#define ILI9341_DARKGREY    0x7BEF  ///< 123, 125, 123
-#define ILI9341_BLUE        0x001F  ///<   0,   0, 255
-#define ILI9341_GREEN       0x07E0  ///<   0, 255,   0
-#define ILI9341_CYAN        0x07FF  ///<   0, 255, 255
-#define ILI9341_RED         0xF800  ///< 255,   0,   0
-#define ILI9341_MAGENTA     0xF81F  ///< 255,   0, 255
-#define ILI9341_YELLOW      0xFFE0  ///< 255, 255,   0
-#define ILI9341_WHITE       0xFFFF  ///< 255, 255, 255
-#define ILI9341_ORANGE      0xFD20  ///< 255, 165,   0
-#define ILI9341_GREENYELLOW 0xAFE5  ///< 173, 255,  41
-#define ILI9341_PINK        0xFC18  ///< 255, 130, 198
-
-#define FOREGROUND 			1
-#define BACKGROUND			0
-
 #define START_BTN 	1
 #define STOP_BTN	2
 #define CAL_BTN		0
 #define MEASURE_BTN 3
+#define WAYPOINT_BTN 16
 
 #define BUF_SIZE 25
 char lcd_buffer[BUF_SIZE];
@@ -121,7 +100,7 @@ extern u8 SmallFont[];
 extern u8 BigFont[];
 extern u8 SevenSegNumFont[];
 
-u32 LCD_Read(char VL);
+//u32 LCD_Read(char VL);
 void LCD_Write_COM(char VL);  
 void LCD_Write_DATA(char VL);
 void LCD_Write_DATA16(char VH, char VL);
@@ -129,20 +108,19 @@ void LCD_Write_DATA16(char VH, char VL);
 void initLCD(void);
 void setXY(int x1, int y1, int x2, int y2);
 void setColor(u8 r, u8 g, u8 b);
-void setColorFast( u8 fg, u16 color);
 void setColorBg(u8 r, u8 g, u8 b);
 void clrXY(void);
 void clrScr(void);
 
-void drawHLine(int x, int y, int l);
+//void drawHLine(int x, int y, int l);
 void fillRect(int x1, int y1, int x2, int y2);
 
 void setFont(u8* font);
 void printChar(u8 c, int x, int y);
 void lcdPrint(char *st, int x, int y);
 void init_buf( char* buf, size_t size);
-void display_imu_data(char* buf, size_t size);
 void display_steps( char* buf, size_t size);
+void display_waypoint( char* buf, size_t size, int waypoint, float dist, float dir);
 void display_cal_directions(char* buf, size_t size, int signal);
 void display_meas_directions(char* buf, size_t size, int signal);
 

@@ -58,34 +58,34 @@ int bcl;
 struct _current_font cfont;
 
 
-// Read data from LCD controller
-// FIXME: not work
-u32 LCD_Read(char VL)
-{
-    u32 retval = 0;
-    int index = 0;
-
-    Xil_Out32(SPI_DC, 0x0);
-    Xil_Out32(SPI_DTR, VL);
-    
-    //while (0 == (Xil_In32(SPI_SR) & XSP_SR_TX_EMPTY_MASK));
-    while (0 == (Xil_In32(SPI_IISR) & XSP_INTR_TX_EMPTY_MASK));
-    Xil_Out32(SPI_IISR, Xil_In32(SPI_IISR) | XSP_INTR_TX_EMPTY_MASK);
-    Xil_Out32(SPI_DC, 0x01);
-
-    while (1 == (Xil_In32(SPI_SR) & XSP_SR_RX_EMPTY_MASK));
-    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
-
-
-    while (0 == (Xil_In32(SPI_SR) & XSP_SR_RX_EMPTY_MASK)) {
-       retval = (retval << 8) | Xil_In32(SPI_DRR);
-       xil_printf("receive %dth byte\n", index++);
-    }
-
-    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
-    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
-    return retval;
-}
+//// Read data from LCD controller
+//// FIXME: not work
+//u32 LCD_Read(char VL)
+//{
+//    u32 retval = 0;
+//    int index = 0;
+//
+//    Xil_Out32(SPI_DC, 0x0);
+//    Xil_Out32(SPI_DTR, VL);
+//
+//    //while (0 == (Xil_In32(SPI_SR) & XSP_SR_TX_EMPTY_MASK));
+//    while (0 == (Xil_In32(SPI_IISR) & XSP_INTR_TX_EMPTY_MASK));
+//    Xil_Out32(SPI_IISR, Xil_In32(SPI_IISR) | XSP_INTR_TX_EMPTY_MASK);
+//    Xil_Out32(SPI_DC, 0x01);
+//
+//    while (1 == (Xil_In32(SPI_SR) & XSP_SR_RX_EMPTY_MASK));
+//    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
+//
+//
+//    while (0 == (Xil_In32(SPI_SR) & XSP_SR_RX_EMPTY_MASK)) {
+//       retval = (retval << 8) | Xil_In32(SPI_DRR);
+//       xil_printf("receive %dth byte\n", index++);
+//    }
+//
+//    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
+//    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
+//    return retval;
+//}
 
 
 // Write command to LCD controller
@@ -203,7 +203,7 @@ void initLCD(void)
     fcl = 0xFF;
     bch = 0x00;
     bcl = 0x00;
-    setFont(SmallFont);
+    setFont(BigFont);
 }
 
 
@@ -273,22 +273,22 @@ void clrScr(void)
 
 
 // Draw horizontal line
-void drawHLine(int x, int y, int l)
-{
-    int i;
-
-    if (l < 0) {
-        l = -l;
-        x -= l;
-    }
-
-    setXY(x, y, x + l, y);
-    for (i = 0; i < l + 1; i++) {
-        LCD_Write_DATA16(fch, fcl);
-    }
-
-    clrXY();
-}
+//void drawHLine(int x, int y, int l)
+//{
+//    int i;
+//
+//    if (l < 0) {
+//        l = -l;
+//        x -= l;
+//    }
+//
+//    setXY(x, y, x + l, y);
+//    for (i = 0; i < l + 1; i++) {
+//        LCD_Write_DATA16(fch, fcl);
+//    }
+//
+//    clrXY();
+//}
 
 
 // Fill a rectangular 
@@ -363,21 +363,6 @@ void init_buf( char* buf, size_t size){
 	}
 }
 
-//void display_imu_data(char* buf, size_t size){
-//	init_buf( buf, size);
-//	sprintf( buf, "X: %.3f\0", acc_thresh_x);
-//	lcdPrint(buf, 10, 70); //draw new text
-//	init_buf( buf, size);
-//	sprintf( buf, "Y: %.3f\0", acc_thresh_y);
-//	lcdPrint(buf, 10, 90); //draw new text
-//	init_buf( buf, size);
-//	sprintf( buf, "Z: %.3f\0", acc_thresh_z);
-//	lcdPrint(buf, 10, 110); //draw new text
-//
-//	init_buf( buf, size);
-//	snprintf( buf, 25,"axis: %d", major_axis);
-//	lcdPrint(buf, 10, 150); //draw new text
-//}
 
 void display_steps( char* buf, size_t size){
 	init_buf( buf, size);
@@ -385,7 +370,7 @@ void display_steps( char* buf, size_t size){
 	lcdPrint(buf, 10, 240); //draw new text
 
 	init_buf( buf, size);
-	snprintf( buf, 25,"axis: %d", major_axis);
+	snprintf( buf, 25,"alt: %.2f", RefElevation);
 	lcdPrint(buf, 10, 220); //draw new text
 
 	if (state == MEASURE_BTN) {
@@ -483,20 +468,35 @@ void display_meas_directions(char* buf, size_t size, int signal){
 
 		init_buf( buf, size);
 		snprintf( buf, 25,"Hit left btn");
-		lcdPrint(buf, 10, 130); //draw new text
+		lcdPrint(buf, 10, 150); //draw new text
 
 		init_buf( buf, size);
 		snprintf( buf, 25,"to calibrate");
-		lcdPrint(buf, 10, 150); //draw new text
+		lcdPrint(buf, 10, 170); //draw new text
 		break;
 
-	case STOP_BTN:
+	case STOP_BTN: //drop a waypoint
 		init_buf( buf, size);
-		snprintf( buf, 25,"Tired??");
+		snprintf( buf, 25,"stop bu");
 		lcdPrint(buf, 10, 70); //draw new text
 		break;
 
-	}
+}
+}
+
+void display_waypoint( char* buf, size_t size, int waypoint, float dist, float dir){
+	init_buf( buf, size);
+	snprintf( buf, 25,"waypoint: %d", waypoint);
+	lcdPrint(buf, 10, 70); //draw new text
+
+	init_buf( buf, size);
+	snprintf( buf, 25,"dist: %.2f m", dist);
+	lcdPrint(buf, 10, 90); //draw new text
+
+	init_buf( buf, size);
+	snprintf( buf, 25,"dir: %.2f", dir);
+	lcdPrint(buf, 10, 110); //draw new text
+	return;
 }
 
 

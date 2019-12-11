@@ -15,14 +15,23 @@ enum Lab3ASignals {
 	MEASURE_SIG,
 	TICK_SIG,
 	START_SIG,
-	STOP_SIG
+	STOP_SIG,
+	WAYPOINT_SIG
 };
 
 int sample_num;
 int state;
 
-//float gyro_data[3][100];
-//float degree_data[100];
+volatile float dist[8];
+volatile float dir[8];
+volatile float dx[8];
+volatile float dy[8];
+volatile float th[100]; //up to 100 steps between waypoints
+volatile u8 waypoint;
+volatile float local_dx;
+volatile float local_dy;
+volatile float RefElevation; //in meters
+
 
 NAV_RectCoord Magnetometer_Data;
 

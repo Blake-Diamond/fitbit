@@ -43,6 +43,9 @@
 #include "sleep.h"
 #include "xil_cache.h"
 #include "math.h"
+//#include "xil_printf.h"
+
+float SinTable[LUT_SIZE] = {0.000000,0.049068,0.098017,0.146730,0.195090,0.242980,0.290285,0.336890,0.382683,0.427555,0.471397,0.514103,0.555570,0.595699,0.634393,0.671559,0.707107,0.740951,0.773010,0.803208,0.831470,0.857729,0.881921,0.903989,0.923880,0.941544,0.956940,0.970031,0.980785,0.989177,0.995185,0.998795,1.000000,0.998795,0.995185,0.989177,0.980785,0.970031,0.956940,0.941544,0.923880,0.903989,0.881921,0.857729,0.831470,0.803208,0.773010,0.740951,0.707107,0.671559,0.634393,0.595699,0.555570,0.514103,0.471397,0.427555,0.382683,0.336890,0.290285,0.242980,0.195090,0.146730,0.098017,0.049068,0.000000,-0.049068,-0.098017,-0.146730,-0.195090,-0.242980,-0.290285,-0.336890,-0.382683,-0.427555,-0.471397,-0.514103,-0.555570,-0.595699,-0.634393,-0.671559,-0.707107,-0.740951,-0.773010,-0.803208,-0.831470,-0.857729,-0.881921,-0.903989,-0.923880,-0.941544,-0.956940,-0.970031,-0.980785,-0.989177,-0.995185,-0.998795,-1.000000,-0.998795,-0.995185,-0.989177,-0.980785,-0.970031,-0.956940,-0.941544,-0.923880,-0.903989,-0.881921,-0.857729,-0.831470,-0.803208,-0.773010,-0.740951,-0.707107,-0.671559,-0.634393,-0.595699,-0.555570,-0.514103,-0.471397,-0.427555,-0.382683,-0.336890,-0.290285,-0.242980,-0.1};
 
 XSpi_Config NAVConfig = {
    0, // u16 DeviceId
@@ -1585,9 +1588,9 @@ void NAV_ReadMag(PmodNAV *InstancePtr, s16 *MagX, s16 *MagY, s16 *MagZ) {
 void NAV_ReadMagGauss(PmodNAV *InstancePtr) {
    s16 MagX, MagY, MagZ;
    NAV_ReadMag(InstancePtr, &MagX, &MagY, &MagZ);
-   InstancePtr->magData.X = NAV_ConvertReadingToValueGauss(InstancePtr, MagX);
-   InstancePtr->magData.Y = NAV_ConvertReadingToValueGauss(InstancePtr, MagY);
-   InstancePtr->magData.Z = NAV_ConvertReadingToValueGauss(InstancePtr, MagZ);
+   InstancePtr->magData.X = NAV_ConvertReadingToValueGauss(InstancePtr, MagX) - 0.2278;
+   InstancePtr->magData.Y = NAV_ConvertReadingToValueGauss(InstancePtr, MagY) - 0.1442;
+   InstancePtr->magData.Z = NAV_ConvertReadingToValueGauss(InstancePtr, MagZ) + 0.2776;
 }
 
 /* ------------------------------------------------------------ */
@@ -2545,25 +2548,25 @@ void NAV_FIFOEnable(PmodNAV *InstancePtr, u8 bInst, bool fEnable) {
 **      register for the accel+gyro instruments and for altimeter instrument.
 **      The magnetometer instrument does not contain FIFO
 */
-void NAV_SetFIFO(PmodNAV *InstancePtr, u8 bInst, u8 parFIFOMode,
-      u8 FIFOThreshold) {
-   switch (bInst) {
-   case NAV_INST_AG:
-      NAV_SetBitsInRegister(InstancePtr, NAV_INST_AG, NAV_IMU_FIFO_CTRL,
-            NAV_IMU_MSK_FIFO_CTL_MODE, parFIFOMode, 5);
-      NAV_SetBitsInRegister(InstancePtr, NAV_INST_AG, NAV_IMU_FIFO_CTRL,
-            NAV_IMU_MSK_FIFO_THS, FIFOThreshold, 0);
-      break;
-   case NAV_INST_ALT:
-      NAV_SetBitsInRegister(InstancePtr, NAV_INST_ALT, NAV_ALT_FIFO_CTRL,
-            NAV_ALT_MSK_FIFO_CTL_MODE, parFIFOMode, 5);
-      NAV_SetBitsInRegister(InstancePtr, NAV_INST_ALT, NAV_ALT_FIFO_CTRL,
-            NAV_ALT_MSK_FIFO_THS, FIFOThreshold, 0);
-      break;
-   default:
-      break;
-   }
-}
+//void NAV_SetFIFO(PmodNAV *InstancePtr, u8 bInst, u8 parFIFOMode,
+//      u8 FIFOThreshold) {
+//   switch (bInst) {
+//   case NAV_INST_AG:
+//      NAV_SetBitsInRegister(InstancePtr, NAV_INST_AG, NAV_IMU_FIFO_CTRL,
+//            NAV_IMU_MSK_FIFO_CTL_MODE, parFIFOMode, 5);
+//      NAV_SetBitsInRegister(InstancePtr, NAV_INST_AG, NAV_IMU_FIFO_CTRL,
+//            NAV_IMU_MSK_FIFO_THS, FIFOThreshold, 0);
+//      break;
+//   case NAV_INST_ALT:
+//      NAV_SetBitsInRegister(InstancePtr, NAV_INST_ALT, NAV_ALT_FIFO_CTRL,
+//            NAV_ALT_MSK_FIFO_CTL_MODE, parFIFOMode, 5);
+//      NAV_SetBitsInRegister(InstancePtr, NAV_INST_ALT, NAV_ALT_FIFO_CTRL,
+//            NAV_ALT_MSK_FIFO_THS, FIFOThreshold, 0);
+//      break;
+//   default:
+//      break;
+//   }
+//}
 
 /* ------------------------------------------------------------ */
 /*** u8 NAV_GetFIFOMode(PmodNAV *InstancePtr, u8 bInst)
@@ -2713,16 +2716,143 @@ void Nav_EnableCaches(void) {
 }
 
 
-
+/*TODO: implement efficient algorithms for:
+ * 	1) arctan - taylor series
+ * 	2) sin / cos - lookup table
+ * 	4) sqrt - Newton Method (done)
+ * 	5) pow - Need to figure out x^0.2 could use a table considering altitude won't cha
+ */
 float Nav_AngleInXY(NAV_RectCoord r) {
    float d;
    if (r.X == 0)
       d = (r.Y < 0) ? 90 : 0;
    else
-      d = atan2f(r.Y, r.X) * 180 / M_PI;
+//	   d = compute_arctan( r.X , r.Y ) * 180 / PI;
+	   d = atan2f( r.Y , r.X ) * 180 / PI;
    if (d > 360)
       d -= 360;
    else if (d < 0)
       d += 360;
    return d;
 }
+
+//input in degrees, output in rad
+float find_cosine(float theta){
+//	float temp = cos( theta * M_PI / 180 );
+	float result;
+	u16 scaled_angle = (u16) (theta * 182.0416667);
+
+	result = lookup_angle( scaled_angle + 16384 );
+//	xil_printf("cos: %d approx: %d\n",(int)(1000*temp), (int)(1000*result));
+	return result;
+}
+
+float find_sine(float theta){
+//	float temp = sin( theta * M_PI / 180  );
+	float result;
+	u16 scaled_angle = (u16) (theta * 182.0416667);
+	result = lookup_angle( scaled_angle );
+//	xil_printf("sin: %d approx: %d\n",(int)(1000*temp), (int)(1000*result));
+
+	return result;
+}
+
+float find_dist( float x, float y){
+	return sqrt_f( (x*x) + (y*y) );
+}
+
+//input in m, output degrees
+float find_dir(float x, float y){
+//	return ( 180 / M_PI ) * atan2f( 0-y , 0-x);
+	float rel_angle = ( 180 / PI ) * compute_arctan( x , y);
+
+	//find correct quadrant
+	if( x >= 0.0f && y >= 0.0f) return 270 - rel_angle; //Q1
+	else if( x >= 0.0f && y <= 0.0f ) return 270 + rel_angle; //Q2
+	else if( x <= 0.0f && y <= 0.0f) return 90 - rel_angle; //Q3
+	else return 90 + rel_angle; //Q4
+}
+
+
+
+/**************** Altitude Reading Functions ****************************/
+float Nav_ConvPresToMeters(float P_refrence , float hPa) {
+   return ((1 - pow(hPa / P_refrence, 0.190284)) * 145366.45);
+//	return (1 - pow_lin_approx( hPa / P_refrence) * 145366.45);
+}
+
+/* returns refrence pressure, inputs: currnet reading + altitiude in feet */
+float Nav_ComputePref(float hPa, float altitudeFeet) {
+   float temp = 1 - (altitudeFeet / 145366.45);
+//   return hPa / (powf(temp, 1 / 0.190284)); //just multiple five timers.
+   return hPa / ( temp * temp * temp * temp * temp);
+}
+
+/* after data has been read, call this to compute origin altitude
+ * input: current pressure reading + altitude in feet
+ * output: origin altitude in meters */
+float Nav_GetOrigin_Alt( float hPa, float altFeet){
+	Pref = Nav_ComputePref( hPa, altFeet );
+	return Nav_ConvPresToMeters( Pref , hPa );
+}
+
+float sqrt_f(float x)
+{
+        float xhalf = 0.5f*x;
+        union
+        {
+            float x;
+            int i;
+        } u;
+        u.x = x;
+        u.i = 0x5f3759df - (u.i >> 1);
+        /* The next line can be repeated any number of times to increase accuracy */
+        // u.x = u.x * (1.5f - xhalf * u.x * u.x);
+        int i = 10;
+        while (i--)
+            u.x *= 1.5f - xhalf * u.x * u.x;
+
+        return 1.0f / u.x;
+}
+
+
+float compute_arctan( float x , float y){
+	float val = y/x;
+	float inv;
+	if(val <= 1 && val >= -1){
+		return ((PI_4)*x + 0.186982*val - 0.191942*val*val*val);
+	}
+	else if( val > 1){
+		inv = (1/val) - (1/(3*val*val*val)) + (1/(5*val*val*val*val*val));
+		return PI_2 - inv;
+	}
+	else{
+		val *= -1; //change sign
+		inv = (1/val) - (1/(3*val*val*val)) + (1/(5*val*val*val*val*val));
+		return (PI_2 - inv) * -1;
+	}
+}
+
+//when exp = 0.190284
+float pow_lin_approx( float x){
+	return 0.190729*x + 0.80927;
+}
+
+float lookup_angle( u16 value ){
+	u32 divisor = ( 65536 / LUT_SIZE );
+	u32 index = value / divisor;
+	float LUT_A = SinTable[index & (LUT_SIZE - 1)];
+	float LUT_B = SinTable[(index + 1) & (LUT_SIZE - 1)];
+	float LUT_W = (value & (divisor - 1)) / (float)divisor;
+	return LUT_W * (LUT_B - LUT_A) + LUT_A;
+}
+
+
+
+
+
+
+
+
+
+

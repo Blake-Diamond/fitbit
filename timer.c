@@ -20,13 +20,13 @@ void init_timer_interrupt(){
 		status = XTmrCtr_Initialize(&axiTimer, XPAR_AXI_TIMER_0_DEVICE_ID);
 		if (status != XST_SUCCESS) {
 			xil_printf("Initialize timer fail!\n");
-			return XST_FAILURE;
+			return;
 		}
 
 		status = XIntc_Initialize(&sys_intc, XPAR_INTC_0_DEVICE_ID);
 		if (status != XST_SUCCESS) {
 			xil_printf("Initialize interrupt controller fail!\n");
-			return XST_FAILURE;
+			return;
 		}
 
 		status = XIntc_Connect(&sys_intc,
@@ -35,13 +35,13 @@ void init_timer_interrupt(){
 					(void *)&axiTimer);
 		if (status != XST_SUCCESS) {
 			xil_printf("Connect IHR fail!\n");
-			return XST_FAILURE;
+			return;
 		}
 
 		status = XIntc_Start(&sys_intc, XIN_REAL_MODE);
 		if (status != XST_SUCCESS) {
 			xil_printf("Start interrupt controller fail!\n");
-			return XST_FAILURE;
+			return;
 		}
 
 		// Enable interrupt
@@ -83,16 +83,13 @@ void TimerCounterHandler(void *CallBackRef, u8 TmrCtrNumber)
 
 	/* read new data */
 	NAV_GetData(&nav);
-	accel_data[0][sample_num] = nav.acclData.X;
-	accel_data[1][sample_num] = nav.acclData.Y;
-	accel_data[2][sample_num] = nav.acclData.Z;
+	accel_data[sample_num] = nav.acclData.Z;
 	Magnetometer_Data = nav.magData;
 
 	/*determine step */
 	determine_acc_step();
-//	display_imu_data( lcd_buffer, BUF_SIZE);
 	sample_num++;
-
+	if( sample_num == 99 ) init_flag = 1;
 	/* toggle LED */
 	if (sample_num % 24 == 0 && sample_num != 0){
 		XGpio_DiscreteWrite(&Gpio_LED, LED_CHANNEL, led_toggle);

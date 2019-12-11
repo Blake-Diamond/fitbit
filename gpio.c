@@ -101,6 +101,8 @@ void button_handler(void *CallbackRef){
 			QActive_postISR((QActive *)&AO_Lab3A, STOP_SIG);
 			break;
 		case 16:
+			//displatch waypoint
+			QActive_postISR((QActive *)&AO_Lab3A, WAYPOINT_SIG);
 			break;
 		default: break;
 		}
