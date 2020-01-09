@@ -58,36 +58,6 @@ int bcl;
 struct _current_font cfont;
 
 
-//// Read data from LCD controller
-//// FIXME: not work
-//u32 LCD_Read(char VL)
-//{
-//    u32 retval = 0;
-//    int index = 0;
-//
-//    Xil_Out32(SPI_DC, 0x0);
-//    Xil_Out32(SPI_DTR, VL);
-//
-//    //while (0 == (Xil_In32(SPI_SR) & XSP_SR_TX_EMPTY_MASK));
-//    while (0 == (Xil_In32(SPI_IISR) & XSP_INTR_TX_EMPTY_MASK));
-//    Xil_Out32(SPI_IISR, Xil_In32(SPI_IISR) | XSP_INTR_TX_EMPTY_MASK);
-//    Xil_Out32(SPI_DC, 0x01);
-//
-//    while (1 == (Xil_In32(SPI_SR) & XSP_SR_RX_EMPTY_MASK));
-//    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
-//
-//
-//    while (0 == (Xil_In32(SPI_SR) & XSP_SR_RX_EMPTY_MASK)) {
-//       retval = (retval << 8) | Xil_In32(SPI_DRR);
-//       xil_printf("receive %dth byte\n", index++);
-//    }
-//
-//    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
-//    xil_printf("SR = %x\n", Xil_In32(SPI_SR));
-//    return retval;
-//}
-
-
 // Write command to LCD controller
 void LCD_Write_COM(char VL)  
 {
@@ -272,25 +242,6 @@ void clrScr(void)
 }
 
 
-// Draw horizontal line
-//void drawHLine(int x, int y, int l)
-//{
-//    int i;
-//
-//    if (l < 0) {
-//        l = -l;
-//        x -= l;
-//    }
-//
-//    setXY(x, y, x + l, y);
-//    for (i = 0; i < l + 1; i++) {
-//        LCD_Write_DATA16(fch, fcl);
-//    }
-//
-//    clrXY();
-//}
-
-
 // Fill a rectangular 
 void fillRect(int x1, int y1, int x2, int y2)
 {
@@ -370,7 +321,7 @@ void display_steps( char* buf, size_t size){
 	lcdPrint(buf, 10, 240); //draw new text
 
 	init_buf( buf, size);
-	snprintf( buf, 25,"alt: %.2f", RefElevation);
+	snprintf( buf, 25,"alt: %.2fm", RefElevation);//RefElevation
 	lcdPrint(buf, 10, 220); //draw new text
 
 	if (state == MEASURE_BTN) {
@@ -412,25 +363,25 @@ void display_cal_directions(char* buf, size_t size, int signal){
 
 	case STOP_BTN:
 		init_buf( buf, size);
-		snprintf( buf, 25,"You have been");
+		snprintf( buf, 25,"You are at");
 		lcdPrint(buf, 10, 70); //draw new text
 
 		init_buf( buf, size);
-		snprintf( buf, 25,"calibrated.");
+		snprintf( buf, 25,"the origin.");
 		lcdPrint(buf, 10, 90); //draw new text
 
 		init_buf( buf, size);
 		snprintf( buf, 25,"Hit right btn");
-		lcdPrint(buf, 10, 110); //draw new text
+		lcdPrint(buf, 10, 130); //draw new text
 
 		init_buf( buf, size);
 		snprintf( buf, 25,"to measure.");
-		lcdPrint(buf, 10, 130); //draw new text
+		lcdPrint(buf, 10, 150); //draw new text
 		break;
 
 	case CAL_BTN:
 		setColor( 0 , 0, 0); //black
-		fillRect( 0, 40, DISP_X_SIZE, 60); //clear new area (black)
+		fillRect( 0, 20, DISP_X_SIZE, 90); //clear new area (black)
 		setColorBg( 255, 0, 0); //red
 		setFont(BigFont);
 		lcdPrint("CALIBRATE MODE", 10, 40); //draw new text
@@ -452,50 +403,50 @@ void display_meas_directions(char* buf, size_t size, int signal){
 	switch(signal){
 	case MEASURE_BTN:
 		setColor( 0 , 0, 0); //black
-		fillRect( 0, 40, DISP_X_SIZE, 60); //clear new area (black)
+		fillRect( 0, 20, DISP_X_SIZE, 60); //clear new area (black)
 		setColorBg( 255, 0, 0); //red
 		setFont(BigFont);
-		lcdPrint("MEASURE MODE", 20, 40);
+		lcdPrint("MEASURE MODE", 20, 20);
 		fillRect(0, 70, DISP_X_SIZE, DISP_Y_SIZE);
 
 		init_buf( buf, size);
 		snprintf( buf, 25,"Run Forrest!");
-		lcdPrint(buf, 10, 70); //draw new text
+		lcdPrint(buf, 10, 50); //draw new text
 
 		init_buf( buf, size);
 		snprintf( buf, 25,"RUN!");
-		lcdPrint(buf, 10, 90); //draw new text
+		lcdPrint(buf, 10, 70); //draw new text
 
 		init_buf( buf, size);
-		snprintf( buf, 25,"Hit left btn");
+		snprintf( buf, 25,"L: calibrate");
+		lcdPrint(buf, 10, 130); //draw new text
+
+		init_buf( buf, size);
+		snprintf( buf, 25,"Ctr: waypoint");
 		lcdPrint(buf, 10, 150); //draw new text
 
 		init_buf( buf, size);
-		snprintf( buf, 25,"to calibrate");
+		snprintf( buf, 25,"u/d: scroll");
 		lcdPrint(buf, 10, 170); //draw new text
-		break;
-
-	case STOP_BTN: //drop a waypoint
-		init_buf( buf, size);
-		snprintf( buf, 25,"stop bu");
-		lcdPrint(buf, 10, 70); //draw new text
 		break;
 
 }
 }
 
 void display_waypoint( char* buf, size_t size, int waypoint, float dist, float dir){
+	setColor( 0 , 0, 0); //black
+	fillRect( 0, 50, DISP_X_SIZE, 110); //clear new area (black)
 	init_buf( buf, size);
 	snprintf( buf, 25,"waypoint: %d", waypoint);
-	lcdPrint(buf, 10, 70); //draw new text
+	lcdPrint(buf, 10, 50); //draw new text
 
 	init_buf( buf, size);
 	snprintf( buf, 25,"dist: %.2f m", dist);
-	lcdPrint(buf, 10, 90); //draw new text
+	lcdPrint(buf, 10, 70); //draw new text
 
 	init_buf( buf, size);
 	snprintf( buf, 25,"dir: %.2f", dir);
-	lcdPrint(buf, 10, 110); //draw new text
+	lcdPrint(buf, 10, 90); //draw new text
 	return;
 }
 

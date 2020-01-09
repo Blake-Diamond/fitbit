@@ -89,7 +89,7 @@ void TimerCounterHandler(void *CallBackRef, u8 TmrCtrNumber)
 	/*determine step */
 	determine_acc_step();
 	sample_num++;
-	if( sample_num == 99 ) init_flag = 1;
+	if( sample_num == SAMPLE_WINDOW - 1 ) init_flag = 1;
 	/* toggle LED */
 	if (sample_num % 24 == 0 && sample_num != 0){
 		XGpio_DiscreteWrite(&Gpio_LED, LED_CHANNEL, led_toggle);

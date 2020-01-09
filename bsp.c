@@ -46,8 +46,6 @@ void BSP_init(void) {
 //happens after initial state is entered
 void QF_onStartup(void) {                 /* entered with interrupts locked */
 
-	/* Enable interrupts */
-//	xil_printf("\n\rQF_onStartup\n"); // Comment out once you are in your complete program
 
 }
 

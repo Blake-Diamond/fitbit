@@ -2715,19 +2715,11 @@ void Nav_EnableCaches(void) {
 #endif
 }
 
-
-/*TODO: implement efficient algorithms for:
- * 	1) arctan - taylor series
- * 	2) sin / cos - lookup table
- * 	4) sqrt - Newton Method (done)
- * 	5) pow - Need to figure out x^0.2 could use a table considering altitude won't cha
- */
 float Nav_AngleInXY(NAV_RectCoord r) {
    float d;
    if (r.X == 0)
       d = (r.Y < 0) ? 90 : 0;
    else
-//	   d = compute_arctan( r.X , r.Y ) * 180 / PI;
 	   d = atan2f( r.Y , r.X ) * 180 / PI;
    if (d > 360)
       d -= 360;
@@ -2738,54 +2730,45 @@ float Nav_AngleInXY(NAV_RectCoord r) {
 
 //input in degrees, output in rad
 float find_cosine(float theta){
-//	float temp = cos( theta * M_PI / 180 );
 	float result;
 	u16 scaled_angle = (u16) (theta * 182.0416667);
 
 	result = lookup_angle( scaled_angle + 16384 );
-//	xil_printf("cos: %d approx: %d\n",(int)(1000*temp), (int)(1000*result));
+
 	return result;
 }
 
 float find_sine(float theta){
-//	float temp = sin( theta * M_PI / 180  );
 	float result;
 	u16 scaled_angle = (u16) (theta * 182.0416667);
 	result = lookup_angle( scaled_angle );
-//	xil_printf("sin: %d approx: %d\n",(int)(1000*temp), (int)(1000*result));
 
 	return result;
 }
 
-float find_dist( float x, float y){
-	return sqrt_f( (x*x) + (y*y) );
+float find_dist( float x, float y, float z){
+	return sqrt_f( (x*x) + (y*y) + (z*z));
 }
 
 //input in m, output degrees
 float find_dir(float x, float y){
-//	return ( 180 / M_PI ) * atan2f( 0-y , 0-x);
-	float rel_angle = ( 180 / PI ) * compute_arctan( x , y);
+	float rel_angle = ( 180 / PI ) * atan2f(y,x);
 
-	//find correct quadrant
-	if( x >= 0.0f && y >= 0.0f) return 270 - rel_angle; //Q1
-	else if( x >= 0.0f && y <= 0.0f ) return 270 + rel_angle; //Q2
-	else if( x <= 0.0f && y <= 0.0f) return 90 - rel_angle; //Q3
-	else return 90 + rel_angle; //Q4
+	return 180 + rel_angle;
 }
 
 
 
 /**************** Altitude Reading Functions ****************************/
 float Nav_ConvPresToMeters(float P_refrence , float hPa) {
-   return ((1 - pow(hPa / P_refrence, 0.190284)) * 145366.45);
-//	return (1 - pow_lin_approx( hPa / P_refrence) * 145366.45);
+   float result =  ((1 - pow(hPa / P_refrence, 0.190284)) * 145366.45);
+   return result;
 }
 
 /* returns refrence pressure, inputs: currnet reading + altitiude in feet */
 float Nav_ComputePref(float hPa, float altitudeFeet) {
    float temp = 1 - (altitudeFeet / 145366.45);
-//   return hPa / (powf(temp, 1 / 0.190284)); //just multiple five timers.
-   return hPa / ( temp * temp * temp * temp * temp);
+   return hPa / (powf(temp, 1 / 0.190284)); //just multiple five timers.
 }
 
 /* after data has been read, call this to compute origin altitude
@@ -2818,19 +2801,22 @@ float sqrt_f(float x)
 
 float compute_arctan( float x , float y){
 	float val = y/x;
-	float inv;
+	float inv, result;
 	if(val <= 1 && val >= -1){
-		return ((PI_4)*x + 0.186982*val - 0.191942*val*val*val);
+		result = (PI_4)*x + 0.186982*val - 0.191942*val*val*val;
 	}
 	else if( val > 1){
 		inv = (1/val) - (1/(3*val*val*val)) + (1/(5*val*val*val*val*val));
-		return PI_2 - inv;
+		result = (PI_2 - inv);
 	}
 	else{
 		val *= -1; //change sign
 		inv = (1/val) - (1/(3*val*val*val)) + (1/(5*val*val*val*val*val));
-		return (PI_2 - inv) * -1;
+		result = (PI_2 - inv) * -1;
 	}
+
+	if( result < 0.0f ) return result * -1.0f;
+	else return result;
 }
 
 //when exp = 0.190284

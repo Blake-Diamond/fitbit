@@ -9,7 +9,7 @@
 #define SRC_LAB3A_H_
 #include "qepn.h"
 #include "PmodNAV.h"
-//TODO: define signals for lab 3
+
 enum Lab3ASignals {
 	CALIBRATE_SIG = Q_USER_SIG,
 	MEASURE_SIG,
@@ -22,12 +22,14 @@ enum Lab3ASignals {
 int sample_num;
 int state;
 
-volatile float dist[8];
-volatile float dir[8];
-volatile float dx[8];
-volatile float dy[8];
-volatile float th[100]; //up to 100 steps between waypoints
-volatile u8 waypoint;
+volatile float dist[20];
+volatile float dir[20];
+volatile float dx[20];
+volatile float dy[20];
+volatile float dz[20];
+volatile float th[300]; //up to 100 steps between waypoints
+volatile int waypoint;
+volatile int disp_waypoint;
 volatile float local_dx;
 volatile float local_dy;
 volatile float RefElevation; //in meters

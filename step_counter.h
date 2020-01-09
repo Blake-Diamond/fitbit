@@ -5,18 +5,10 @@
 #define X_AXIS 0
 #define Y_AXIS 1
 #define Z_AXIS 2
-#define SAMPLE_WINDOW 100
+#define SAMPLE_WINDOW 50 //100 is best so far ~8 seconds
 
-//float local_min_acc_x;
-//float local_min_acc_y;
 float local_min_acc_z;
-
-//float local_max_acc_x;
-//float local_max_acc_y;
 float local_max_acc_z;
-
-//float acc_thresh_x;
-//float acc_thresh_y;
 float acc_thresh_z;
 
 float thresh;

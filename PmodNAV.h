@@ -473,7 +473,7 @@ float Nav_ConvPresToMeters(float P_refrence , float hPa);
 
 float find_cosine(float x);
 float find_sine(float y);
-float find_dist( float x, float y);
+float find_dist( float x, float y, float z);
 float find_dir(float x, float y);
 float sqrt_f (float x);
 float compute_arctan( float x , float y);
